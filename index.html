@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS Mobile IDE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldgutter.min.css">
+  <style>
+    :root{--bg-primary:#1e1e2e;--bg-secondary:#181825;--text-primary:#cdd6f4;--accent:#89b4fa;--error:#f38ba8;--success:#a6e3a1;--toolbar-height:40px;--tab-height:40px}*{box-sizing:border-box;margin:0;padding:0;font-family:'Menlo','Monaco',monospace}body{background-color:var(--bg-primary);color:var(--text-primary);height:100vh;width:100vw;overflow:hidden}.container{display:flex;flex-direction:column;height:100%}.toolbar{height:var(--toolbar-height);background-color:var(--bg-secondary);display:flex;align-items:center;padding:0 10px;gap:10px;overflow-x:auto;white-space:nowrap}.btn{background-color:transparent;color:var(--text-primary);border:none;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px}.btn:hover{background-color:rgba(255,255,255,0.1)}.btn:active{background-color:rgba(255,255,255,0.2)}.tab-container{display:flex;height:var(--tab-height);background-color:var(--bg-secondary)}.tab{flex:1;display:flex;justify-content:center;align-items:center;cursor:pointer;border-bottom:2px solid transparent}.tab.active{border-bottom:2px solid var(--accent)}.content{flex:1;position:relative;overflow:hidden}#editor,#console{position:absolute;top:0;left:0;right:0;bottom:0;display:none}.active-content{display:block!important}.CodeMirror{height:100%}#console-output{height:100%;padding:10px;overflow-y:auto;background-color:var(--bg-secondary);white-space:pre-wrap;font-size:14px}.log-item{margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.1)}.log-time{color:#6c7086;font-size:12px;margin-right:5px}.log-error{color:var(--error)}.log-info{color:var(--accent)}.log-success{color:var(--success)}.run-time{position:absolute;bottom:10px;right:10px;background-color:var(--bg-secondary);padding:5px 10px;border-radius:4px;font-size:12px;opacity:0.8}.table-container{overflow-x:auto;max-width:100%;margin:5px 0}.log-table{border-collapse:collapse;width:100%;font-size:12px}.log-table th{background-color:rgba(255,255,255,0.1);text-align:left;padding:4px}.log-table td{border:1px solid rgba(255,255,255,0.1);padding:4px}.CodeMirror-hints{background-color:var(--bg-secondary)!important;border:1px solid var(--accent)!important}.cm-hint{color:var(--text-primary)!important}.CodeMirror-hint-active{background-color:var(--accent)!important;color:#000!important}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <button class="btn" id="run-btn">▶ Run</button>
+      <button class="btn" id="clear-btn">Clear</button>
+      <button class="btn" id="undo-btn">Undo</button>
+      <button class="btn" id="redo-btn">Redo</button>
+      <button class="btn" id="copy-btn">Copy</button>
+      <button class="btn" id="paste-btn">Paste</button>
+      <div style="flex:1;"></div>
+      <!-- <button class="btn" id="search-btn">Search</button> -->
+      <button class="btn" id="format-btn">Format</button>
+      <button class="btn" id="function-btn">fn(){}</button>
+      <button class="btn" id="const-btn">const</button>
+      <button class="btn" id="let-btn">let</button>
+      <button class="btn" id="if-btn">if(){}</button>
+      <button class="btn" id="for-btn">for(){}</button>
+      <button class="btn" id="saveBtn">Save</button>
+<button class="btn" id="commentBtn">Comment</button>
+<button class="btn" id="selectAllBtn">Select All</button>
+<button class="btn" id="duplicateBtn">Duplicate</button>
+<button class="btn" id="deleteLineBtn">Delete Line</button>
+<button class="btn" id="moveLineUpBtn">↑ Line</button>
+<button class="btn" id="moveLineDownBtn">↓ Line</button>
+<button class="btn" id="indentBtn">Indent</button>
+<button class="btn" id="dedentBtn">Dedent</button>
+<button class="btn" id="foldAllBtn">Fold All</button>
+<button class="btn" id="unfoldAllBtn">Unfold All</button>
+<button class="btn" id="replaceBtn">Replace</button>
+<button class="btn" id="jumpBtn">Jump To</button>
+<button class="btn" id="downloadBtn">Download</button>
+<button class="btn" id="shareBtn">Share</button>
+<button class="btn" id="settingsBtn">Settings</button>
+<button class="btn" id="consoleLogBtn">log()</button>
+<button class="btn" id="arrowFuncBtn">() => {}</button>
+<button class="btn" id="tryBtn">try{}</button>
+<button class="btn" id="classBtn">class{}</button>
+<button class="btn" id="forEachBtn">forEach</button>
+<button class="btn" id="mapBtn">map()</button>
+<button class="btn" id="asyncBtn">async</button>
+<button class="btn" id="importBtn">import</button>
+    </div>
+    
+    
+    <div class="tab-container">
+      <div class="tab active" id="editor-tab">Editor</div>
+      <div class="tab" id="console-tab">Console</div>
+    </div>
+    
+    <div class="content">
+      <div id="editor" class="active-content"></div>
+      <div id="console">
+        <div id="console-output"></div>
+        <div class="run-time" id="run-time">Execution: 0ms</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/javascript-hint.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/search.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/jump-to-line.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldgutter.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/brace-fold.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/2.8.4/standalone.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/2.8.4/parser-babel.min.js"></script>
+  <script>
+    $(function(){
+      let editor=CodeMirror(document.getElementById('editor'),{
+        mode:'javascript',theme:'dracula',lineNumbers:true,matchBrackets:true,autoCloseBrackets:true,
+        indentUnit:2,tabSize:2,indentWithTabs:false,styleActiveLine:true,lineWrapping:true,
+        foldGutter:true,gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+        extraKeys:{
+          'Ctrl-Space':'autocomplete','Cmd-Space':'autocomplete',
+          'Ctrl-/':function(cm){cm.toggleComment({padding:' '})},
+          'Cmd-/':function(cm){cm.toggleComment({padding:' '})},
+          'Alt-F':function(){$('#format-btn').click()},
+          'Ctrl-F':function(cm){CodeMirror.commands.find(cm)},
+          'Cmd-F':function(cm){CodeMirror.commands.find(cm)},
+          'Ctrl-S':function(){$('#run-btn').click()},
+          'Cmd-S':function(){$('#run-btn').click()},
+          'Ctrl-Enter':function(){$('#run-btn').click()},
+          'Cmd-Enter':function(){$('#run-btn').click()},
+          'Shift-Tab':'indentLess',
+          'Tab':function(cm){
+            if(cm.somethingSelected())cm.indentSelection('add');
+            else cm.replaceSelection('  ','end');
+          }
+        },
+        hintOptions:{completeSingle:false,alignWithWord:true}
+      });
+      
+      editor.setValue('console.log("Hello, World!");\n\n// Try using console.table\nconst data = [\n  {name: "John", age: 28, city: "New York"},\n  {name: "Jane", age: 32, city: "Boston"},\n  {name: "Bob", age: 45, city: "Chicago"}\n];\nconsole.table(data);');
+      
+      let consoleOutput=$('#console-output');
+      let originalConsole={...console};
+      let runTime=$('#run-time');
+      let startTime,endTime;
+      
+      function formatTime(){
+        const now=new Date();
+        return now.getHours().toString().padStart(2,'0')+':'+
+               now.getMinutes().toString().padStart(2,'0')+':'+
+               now.getSeconds().toString().padStart(2,'0');
+      }
+      
+      function createTableHTML(data){
+        if(!Array.isArray(data)||!data.length)return JSON.stringify(data);
+        let keys=Array.isArray(data[0])?
+          data[0].map((_,i)=>i):
+          Object.keys(data[0]);
+        let html='<div class="table-container"><table class="log-table"><thead><tr>';
+        keys.forEach(key=>html+=`<th>${key}</th>`);
+        html+='</tr></thead><tbody>';
+        data.forEach(row=>{
+          html+='<tr>';
+          if(Array.isArray(row)){
+            row.forEach(cell=>html+=`<td>${typeof cell==='object'?JSON.stringify(cell):cell}</td>`);
+          }else{
+            keys.forEach(key=>html+=`<td>${typeof row[key]==='object'?JSON.stringify(row[key]):row[key]??''}</td>`);
+          }
+          html+='</tr>';
+        });
+        html+='</tbody></table></div>';
+        return html;
+      }
+      
+      function overrideConsole(){
+        console.log=function(){
+          let args=Array.from(arguments);
+          let message=args.map(arg=>typeof arg==='object'?JSON.stringify(arg,null,2):arg).join(' ');
+          consoleOutput.append(`<div class="log-item"><span class="log-time">[${formatTime()}]</span> ${message}</div>`);
+          originalConsole.log.apply(console,arguments);
+        };
+        
+        console.error=function(){
+          let args=Array.from(arguments);
+          let message=args.map(arg=>typeof arg==='object'?JSON.stringify(arg,null,2):arg).join(' ');
+          consoleOutput.append(`<div class="log-item log-error"><span class="log-time">[${formatTime()}]</span> Error: ${message}</div>`);
+          originalConsole.error.apply(console,arguments);
+        };
+        
+        console.warn=function(){
+          let args=Array.from(arguments);
+          let message=args.map(arg=>typeof arg==='object'?JSON.stringify(arg,null,2):arg).join(' ');
+          consoleOutput.append(`<div class="log-item log-info"><span class="log-time">[${formatTime()}]</span> Warning: ${message}</div>`);
+          originalConsole.warn.apply(console,arguments);
+        };
+        
+        console.info=function(){
+          let args=Array.from(arguments);
+          let message=args.map(arg=>typeof arg==='object'?JSON.stringify(arg,null,2):arg).join(' ');
+          consoleOutput.append(`<div class="log-item log-info"><span class="log-time">[${formatTime()}]</span> Info: ${message}</div>`);
+          originalConsole.info.apply(console,arguments);
+        };
+        
+        console.table=function(data){
+          const tableHTML=createTableHTML(data);
+          consoleOutput.append(`<div class="log-item"><span class="log-time">[${formatTime()}]</span> ${tableHTML}</div>`);
+          originalConsole.table.apply(console,arguments);
+        };
+      }
+      
+      overrideConsole();
+      
+      $('#run-btn').click(function(){
+        startTime=performance.now();
+        try{
+          const code=editor.getValue();
+          consoleOutput.append(`<div class="log-item log-success"><span class="log-time">[${formatTime()}]</span> Running code...</div>`);
+          eval(code);
+          endTime=performance.now();
+          const executionTime=(endTime-startTime).toFixed(2);
+          runTime.text(`Execution: ${executionTime}ms`);
+          console.info(`Code execution completed in ${executionTime}ms`);
+          $('#console-tab').click();
+        }catch(e){
+          endTime=performance.now();
+          const executionTime=(endTime-startTime).toFixed(2);
+          console.error(e.message);
+          runTime.text(`Execution: ${executionTime}ms`);
+          $('#console-tab').click();
+        }
+      });
+      
+      $('#clear-btn').click(function(){consoleOutput.empty();runTime.text('Execution: 0ms');});
+      $('#undo-btn').click(function(){editor.undo();});
+      $('#redo-btn').click(function(){editor.redo();});
+      
+      $('#copy-btn').click(function(){
+        const code=editor.getValue();
+        navigator.clipboard.writeText(code).then(()=>console.info('Code copied to clipboard'));
+      });
+      
+      $('#paste-btn').click(async function(){
+        try{
+          const text=await navigator.clipboard.readText();
+          editor.setValue(text);
+          console.info('Code pasted from clipboard');
+        }catch(err){console.error('Failed to paste: '+err);}
+      });
+      
+      $('#format-btn').click(function(){
+        try{
+          const code=editor.getValue();
+          const formatted=prettier.format(code,{
+            parser:'babel',plugins:[prettierPlugins.babel],
+            printWidth:80,tabWidth:2,useTabs:false,semi:true,
+            singleQuote:true,trailingComma:'es5'
+          });
+          editor.setValue(formatted);
+          console.info('Code formatted');
+        }catch(err){console.error('Format error: '+err.message);}
+      });
+      
+      // $('#search-btn').click(function(){CodeMirror.commands.find(editor);});
+      $('#function-btn').click(function(){editor.replaceSelection('function name() {\n  \n}');});
+      $('#const-btn').click(function(){editor.replaceSelection('const  = ');});
+      $('#let-btn').click(function(){editor.replaceSelection('let  = ');});
+      $('#if-btn').click(function(){editor.replaceSelection('if () {\n  \n}');});
+      $('#for-btn').click(function(){editor.replaceSelection('for (let i = 0; i < ; i++) {\n  \n}');});
+      
+      $('#saveBtn').click(function() {
+  const code = editor.getValue();
+  const blob = new Blob([code], {type: 'text/javascript'});
+  const a = document.createElement('a');
+  a.download = 'script.js';
+  a.href = URL.createObjectURL(blob);
+  a.click();
+  console.info('Code saved to file');
+});
+
+$('#commentBtn').click(function() {
+  editor.toggleComment({padding: ' '});
+});
+
+$('#selectAllBtn').click(function() {
+  editor.execCommand('selectAll');
+});
+
+$('#duplicateBtn').click(function() {
+  const cursor = editor.getCursor();
+  const line = editor.getLine(cursor.line);
+  editor.replaceRange(line + '\n', {line: cursor.line, ch: 0});
+  console.info('Line duplicated');
+});
+
+$('#deleteLineBtn').click(function() {
+  const cursor = editor.getCursor();
+  editor.execCommand('deleteLine');
+  console.info('Line deleted');
+});
+
+$('#moveLineUpBtn').click(function() {
+  const cursor = editor.getCursor();
+  if (cursor.line > 0) {
+    const currentLine = editor.getLine(cursor.line);
+    const prevLine = editor.getLine(cursor.line - 1);
+    editor.replaceRange(currentLine + '\n' + prevLine, 
+      {line: cursor.line - 1, ch: 0}, {line: cursor.line + 1, ch: 0});
+    editor.setCursor({line: cursor.line - 1, ch: cursor.ch});
+  }
+});
+
+$('#moveLineDownBtn').click(function() {
+  const cursor = editor.getCursor();
+  if (cursor.line < editor.lineCount() - 1) {
+    const currentLine = editor.getLine(cursor.line);
+    const nextLine = editor.getLine(cursor.line + 1);
+    editor.replaceRange(nextLine + '\n' + currentLine, 
+      {line: cursor.line, ch: 0}, {line: cursor.line + 2, ch: 0});
+    editor.setCursor({line: cursor.line + 1, ch: cursor.ch});
+  }
+});
+
+$('#indentBtn').click(function() {
+  editor.execCommand('indentMore');
+});
+
+$('#dedentBtn').click(function() {
+  editor.execCommand('indentLess');
+});
+
+$('#foldAllBtn').click(function() {
+  editor.operation(function() {
+    for (let i = 0; i < editor.lineCount(); i++) {
+      editor.foldCode({line: i, ch: 0}, null, "fold");
+    }
+  });
+});
+
+$('#unfoldAllBtn').click(function() {
+  editor.operation(function() {
+    for (let i = 0; i < editor.lineCount(); i++) {
+      editor.foldCode({line: i, ch: 0}, null, "unfold");
+    }
+  });
+});
+
+$('#replaceBtn').click(function() {
+  CodeMirror.commands.replace(editor);
+});
+
+$('#jumpBtn').click(function() {
+  const line = prompt('Enter line number:');
+  if (line && !isNaN(line)) {
+    editor.setCursor({line: parseInt(line) - 1, ch: 0});
+    editor.focus();
+  }
+});
+
+$('#downloadBtn').click(function() {
+  const code = editor.getValue();
+  const blob = new Blob([code], {type: 'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'code.js';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$('#shareBtn').click(function() {
+  const code = editor.getValue();
+  try {
+    const encodedCode = btoa(encodeURIComponent(code));
+    console.info(`Share this code: ${encodedCode}`);
+    navigator.clipboard.writeText(encodedCode).then(() => {
+      console.info('Share code copied to clipboard');
+    });
+  } catch (e) {
+    console.error('Failed to encode code for sharing');
+  }
+});
+
+$('#settingsBtn').click(function() {
+  const theme = prompt('Choose theme (dracula, monokai, solarized):', 'dracula');
+  if (theme) editor.setOption('theme', theme);
+});
+
+$('#consoleLogBtn').click(function() {
+  editor.replaceSelection('console.log();');
+  const cursor = editor.getCursor();
+  editor.setCursor({line: cursor.line, ch: cursor.ch - 2});
+});
+
+$('#arrowFuncBtn').click(function() {
+  editor.replaceSelection('() => {\n  \n}');
+});
+
+$('#tryBtn').click(function() {
+  editor.replaceSelection('try {\n  \n} catch (error) {\n  console.error(error);\n}');
+});
+
+$('#classBtn').click(function() {
+  editor.replaceSelection('class ClassName {\n  constructor() {\n    \n  }\n}');
+});
+
+$('#forEachBtn').click(function() {
+  editor.replaceSelection('.forEach((item) => {\n  \n})');
+});
+
+$('#mapBtn').click(function() {
+  editor.replaceSelection('.map((item) => {\n  \n})');
+});
+
+$('#asyncBtn').click(function() {
+  editor.replaceSelection('async function name() {\n  \n}');
+});
+
+$('#importBtn').click(function() {
+  editor.replaceSelection('import { } from "";');
+});
+      
+      $('#editor-tab').click(function(){
+        $(this).addClass('active');
+        $('#console-tab').removeClass('active');
+        $('#editor').addClass('active-content');
+        $('#console').removeClass('active-content');
+      });
+      
+      $('#console-tab').click(function(){
+        $(this).addClass('active');
+        $('#editor-tab').removeClass('active');
+        $('#console').addClass('active-content');
+        $('#editor').removeClass('active-content');
+      });
+      
+      $(document).keydown(function(e){
+        if((e.ctrlKey||e.metaKey)&&e.keyCode===13){
+          $('#run-btn').click();
+          e.preventDefault();
+        }
+      });
+      
+      editor.on('keyup',function(cm,event){
+        if(!cm.state.completionActive&&
+            !(/[0-9]/i.test(String.fromCharCode(event.keyCode)))&&
+            (event.keyCode>64&&event.keyCode<91)||event.keyCode===190){
+          CodeMirror.commands.autocomplete(cm,null,{completeSingle:false});
+        }
+      });
+      
+      editor.on('change',function(){
+        let cursor=editor.getCursor();
+        if(cursor.ch>0){
+          let token=editor.getTokenAt(cursor);
+          if(token.type==="variable"||token.type==="property"){
+            CodeMirror.commands.autocomplete(editor,null,{completeSingle:false});
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
